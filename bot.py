@@ -957,7 +957,7 @@ async def monitorar_horario():
 
         await asyncio.sleep(30)
 
-# ==================== CONFIGURAÇÃO DO SERVIDOR WEB ====================
+# ==================== CONFIGURAÇÃO DO SERVIDOR WEB (RENDER) ====================
 async def handle_health_check(request):
     return web.Response(text="BOT MVM OPERACIONAL", status=200)
 
@@ -967,6 +967,8 @@ async def iniciar_servidor_web():
     runner = web.AppRunner(app)
     await runner.setup()
     
+    # O Render fornece a porta automaticamente nesta variável. 
+    # Usamos 10000 como padrão caso esteja testando localmente.
     porta = int(os.getenv("PORT", 10000))
     site = web.TCPSite(runner, "0.0.0.0", porta)
     await site.start()
@@ -974,9 +976,24 @@ async def iniciar_servidor_web():
 
 # ==================== FUNÇÃO PRINCIPAL DE INICIALIZAÇÃO ====================
 async def main():
-    bot.loop.create_task(monitorar_horario())
-    
+    print("Iniciando componentes...")
+
+    # 1. Tenta reconhecer o grupo antes de iniciar as tarefas de monitoramento
+    # Isso resolve o erro de 'Could not find the input entity'
+    try:
+        print(f"Buscando acesso ao grupo {GRUPO_ID}...")
+        await bot.get_entity(GRUPO_ID)
+        print("✅ Grupo reconhecido com sucesso!")
+    except Exception as e:
+        print(f"⚠️ Aviso: Não foi possível encontrar o grupo de imediato: {e}")
+        print("O bot tentará continuar, mas o monitoramento de horário pode falhar até que alguém mande mensagem no grupo.")
+
+    # 2. Inicia o servidor Web para o Render (ESSENCIAL)
+    # Iniciamos antes do monitoramento para evitar Port Timeout se o monitoramento demorar
     await iniciar_servidor_web()
+    
+    # 3. Inicia o monitoramento de horário em segundo plano
+    bot.loop.create_task(monitorar_horario())
     
     print("🚀 BOT INICIADO!")
     print("Comandos disponíveis: /menu ; /gemini e /info @(usuário)")
@@ -1002,15 +1019,17 @@ async def main():
  ░░░░░░░▒███░░░░░░░░░░░░░░░░░███▒░░░░░░░ 
  ░░░░░░░░░░▒████▓▒░░░░░▒▒████▓░░░░░░░░░░ 
  ░░░░░░░░░░░░░░██████████░░░░░░░░░░░░░░░
-    -      TELEGRAM MVM BOT INICIADO     -
+      -      TELEGRAM MVM BOT INICIADO      -
 """)
-    
+
+    # 4. Mantém o cliente do Telegram rodando
     await bot.run_until_disconnected()
 
 if __name__ == '__main__':
     try:
+        # Roda o loop principal
         bot.loop.run_until_complete(main())
     except KeyboardInterrupt:
-        pass
+        print("Bot desligado manualmente.")
     except Exception as e:
-        print(f"❌ Erro principal do bot: {e}")
+        print(f"❌ Erro fatal na execução: {e}")
