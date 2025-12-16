@@ -964,7 +964,6 @@ async def filtro_palavras(event):
     if await is_admin(event, event.chat_id, event.sender_id):
         return
 
-
     frase_completa = event.raw_text
     texto_minusculo = frase_completa.lower()
     
@@ -973,16 +972,16 @@ async def filtro_palavras(event):
             user = await event.get_sender()
             nome_usuario = user.first_name if user else "Desconhecido"
             
-            # LOG DETALHADO PARA O RENDER
             print(f"🚫 LOG MVM: Termo '{palavra}' detectado!")
             print(f"👤 Usuário: {nome_usuario} ({event.sender_id})")
-            print(f"📝 Mensagem: {frase_completa}")
+            print(f"📝 Mensagem enviada: {frase_completa}")
             print("-" * 30)
             
+            try:
+                await event.delete()
             except Exception as e:
                 print(f"⚠️ Erro ao tentar apagar mensagem: {e}")
-            break
-            
+            break 
 # ==================== CONFIGURAÇÃO DO SERVIDOR WEB (RENDER) ====================
 async def handle_health_check(request):
     return web.Response(text="BOT MVM OPERACIONAL", status=200)
@@ -1059,3 +1058,4 @@ if __name__ == '__main__':
         print("Bot desligado manualmente.")
     except Exception as e:
         print(f"❌ Erro fatal na execução: {e}")
+
