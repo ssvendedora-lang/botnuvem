@@ -957,6 +957,32 @@ async def monitorar_horario():
 
         await asyncio.sleep(30)
 
+# ==================== MONITORAMENTO DE PALAVRAS PROIBIDAS ====================
+@bot.on(events.NewMessage(func=lambda e: e.is_group))
+async def filtro_palavras(event):
+
+    if await is_admin(event, event.chat_id, event.sender_id):
+        return
+
+
+    frase_completa = event.raw_text
+    texto_minusculo = frase_completa.lower()
+    
+    for palavra in palavras_proibidas:
+        if palavra in texto_minusculo:
+            user = await event.get_sender()
+            nome_usuario = user.first_name if user else "Desconhecido"
+            
+            # LOG DETALHADO PARA O RENDER
+            print(f"🚫 LOG MVM: Termo '{palavra}' detectado!")
+            print(f"👤 Usuário: {nome_usuario} ({event.sender_id})")
+            print(f"📝 Mensagem: {frase_completa}")
+            print("-" * 30)
+            
+            except Exception as e:
+                print(f"⚠️ Erro ao tentar apagar mensagem: {e}")
+            break
+            
 # ==================== CONFIGURAÇÃO DO SERVIDOR WEB (RENDER) ====================
 async def handle_health_check(request):
     return web.Response(text="BOT MVM OPERACIONAL", status=200)
