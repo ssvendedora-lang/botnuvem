@@ -890,21 +890,7 @@ async def tratar_info(event):
                     print(f"Falha ao deletar a mensagem: {delete_e}")
                     
                 return
-
-# ==================== MINI SERVIDOR HTTP ====================
-async def handle(request):
-    return web.Response(text="Bot ativo!")
-
-async def init_server():
-    app = web.Application()
-    app.router.add_get('/', handle)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    port = int(os.environ.get("PORT", 10000))  # Render passa PORT
-    site = web.TCPSite(runner, '0.0.0.0', port)
-    await site.start()
-    print(f"Servidor rodando na porta {port}")
-
+                
 # ==================== TAREFA ASSÍNCRONA — BLOQUEIO AUTOMÁTICO (MODIFICADA) ====================
 async def monitorar_horario():
     chat = await bot.get_entity(GRUPO_ID)
@@ -971,13 +957,30 @@ async def monitorar_horario():
 
         await asyncio.sleep(30)
 
-# ==================== INÍCIO DO BOT ====================
+# ==================== CONFIGURAÇÃO DO SERVIDOR WEB ====================
+async def handle_health_check(request):
+    return web.Response(text="BOT MVM OPERACIONAL", status=200)
 
-bot.loop.create_task(monitorar_horario())
+async def iniciar_servidor_web():
+    app = web.Application()
+    app.router.add_get("/", handle_health_check)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    
+    porta = int(os.getenv("PORT", 10000))
+    site = web.TCPSite(runner, "0.0.0.0", porta)
+    await site.start()
+    print(f"✅ Servidor Web de monitoramento iniciado na porta {porta}")
 
-print("BOT INICIADO!")
-print("Comandos disponíveis: /menu ; /gemini e /info @(usuário)")
-print(r"""
+# ==================== FUNÇÃO PRINCIPAL DE INICIALIZAÇÃO ====================
+async def main():
+    bot.loop.create_task(monitorar_horario())
+    
+    await iniciar_servidor_web()
+    
+    print("🚀 BOT INICIADO!")
+    print("Comandos disponíveis: /menu ; /gemini e /info @(usuário)")
+    print(r"""
  ░░░░░░░░░░░▓███████████████▓░░░░░░░░░░░ 
  ░░░░░░░░▓███░░░░░░░░░░░░░░░████░░░░░░░░ 
  ░░░░░░███░░░░░░░░░░░░░░░░░░░░░███░░░░░░ 
@@ -999,14 +1002,15 @@ print(r"""
  ░░░░░░░▒███░░░░░░░░░░░░░░░░░███▒░░░░░░░ 
  ░░░░░░░░░░▒████▓▒░░░░░▒▒████▓░░░░░░░░░░ 
  ░░░░░░░░░░░░░░██████████░░░░░░░░░░░░░░░
-    -     TELEGRAM MVM BOT INICIADO     -
+    -      TELEGRAM MVM BOT INICIADO     -
 """)
+    
+    await bot.run_until_disconnected()
 
 if __name__ == '__main__':
-   
     try:
-        
-        with bot:
-            bot.run_until_disconnected()
+        bot.loop.run_until_complete(main())
+    except KeyboardInterrupt:
+        pass
     except Exception as e:
-        print(f"Erro principal do bot: {e}")
+        print(f"❌ Erro principal do bot: {e}")
