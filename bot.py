@@ -831,10 +831,10 @@ def horario_permitido():
     fuso_horario = ZoneInfo("America/Sao_Paulo") 
     agora = datetime.now(fuso_horario).time()
     # HORÁRIO DE BLOQUEIO DO GRUPO
-    inicio_manha = time(10, 25)
-    fim_manha = time(10, 26)
-    inicio_tarde = time(10, 27)
-    fim_tarde = time(10, 28)
+    inicio_manha = time(10, 30)
+    fim_manha = time(10, 31)
+    inicio_tarde = time(10, 32)
+    fim_tarde = time(10, 33)
     
     
     return (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
@@ -896,10 +896,10 @@ async def monitorar_horario():
     chat = await bot.get_entity(GRUPO_ID)
     bloqueado = None
 
-    inicio_manha = time(10, 25)
-    fim_manha = time(10, 26)
-    inicio_tarde = time(10, 27)
-    fim_tarde = time(10, 28)
+    inicio_manha = time(10, 30)
+    fim_manha = time(10, 31)
+    inicio_tarde = time(10, 32)
+    fim_tarde = time(10, 33)
 
     while True:
         permitido = horario_permitido()
@@ -1003,7 +1003,7 @@ async def iniciar_servidor_web():
     await site.start()
     print(f"✅ Servidor Web de monitoramento iniciado na porta {porta}")
 
-# ==================== FUNÇÃO PRINCIPAL DE INICIALIZAÇÃO ====================
+# ==================== FUNÇÃO PRINCIPAL ====================
 async def main():
     print("Iniciando componentes...")
 
@@ -1012,13 +1012,13 @@ async def main():
         await bot.get_entity(GRUPO_ID)
         print("✅ Grupo reconhecido com sucesso!")
     except Exception as e:
-        print(f"⚠️ Aviso: Não foi possível encontrar o grupo de imediato: {e}")
+        print(f"⚠️ Aviso: Grupo ainda não resolvido: {e}")
 
-    # inicia servidor web (Render)
+    # servidor web (Render)
     await iniciar_servidor_web()
 
-    # inicia monitoramento de horário
-    asyncio.create_task(monitorar_horario())
+    # monitoramento (usa O MESMO LOOP do Telethon)
+    bot.loop.create_task(monitorar_horario())
 
     print("🚀 BOT INICIADO!")
     print("Comandos disponíveis: /menu ; /gemini ; /info")
@@ -1048,15 +1048,10 @@ async def main():
       -      TELEGRAM MVM BOT INICIADO      -
 """)
 
-    # mantém o bot ativo
     await bot.run_until_disconnected()
 
 
 # ==================== START ====================
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("Bot desligado manualmente.")
-    except Exception as e:
-        print(f"❌ Erro fatal na execução: {e}")
+    with bot:
+        bot.loop.run_until_complete(main())
