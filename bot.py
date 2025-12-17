@@ -10,7 +10,6 @@ from telethon.tl.types import PeerUser, ChatBannedRights
 from telethon.sessions import MemorySession
 from google import genai
 from google.genai.errors import APIError
-
 from aiohttp import web
 
 # ==================== CONFIGURAÇÕES ====================
@@ -22,9 +21,12 @@ GRUPO_ID = int(os.getenv("TELEGRAM_GRUPO_ID"))
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME")
 
-# Caminhos RELATIVOS (Linux/Fly)
 CAMINHO_BANNER_INTERVALO = "fotosbotmvm/bannerencerramento.png"
 CAMINHO_BANNER_ENCERRAMENTO = "fotosbotmvm/bannerencerramento2.png"
+
+# ==================== CLIENT (CORRIGIDO PARA O RENDER) ====================
+
+bot = TelegramClient(MemorySession(), API_ID, API_HASH)
 
 # ==================== INICIALIZAÇÃO GEMINI ====================
 gemini_client = None
@@ -116,10 +118,6 @@ palavras_proibidas = [
 "m3ntirã", "m3nt1ra", "m3nt1r4", "mnetira", "mentirz",
 "d3sistiu", "d3sisto", "desistiu", "d1esatoo", "ab4ndono", "abandono", "abandonar", "l4rgar", "largar", "larguei"
 ]
-
-# ==================== CLIENT ====================
-
-bot = TelegramClient(MemorySession(), API_ID, API_HASH).start(bot_token=TOKEN)
 
 # ==================== FUNÇÃO — LISTAR MEMBROS POR DATA DE ENTRADA ====================
 async def listar_membros_com_data():
@@ -993,52 +991,47 @@ async def filtro_palavras(event):
             except Exception as e:
                 print(f"⚠️ Erro ao tentar apagar mensagem: {e}")
             break 
-# ==================== CONFIGURAÇÃO DO SERVIDOR WEB (RENDER) ====================
-async def handle_health_check(request):
-    return web.Response(text="BOT MVM OPERACIONAL", status=200)
-
+            
+# ==================== SERVIDOR WEB PARA O RENDER ====================
 async def iniciar_servidor_web():
+    """Mantém o Render feliz abrindo uma porta HTTP obrigatória."""
     app = web.Application()
-    app.router.add_get("/", handle_health_check)
+    app.router.add_get("/", lambda r: web.Response(text="Bot is running"))
     runner = web.AppRunner(app)
     await runner.setup()
-    
-    porta = int(os.getenv("PORT", 10000))
-    site = web.TCPSite(runner, "0.0.0.0", porta)
+    port = int(os.environ.get("PORT", 10000))
+    site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
-    print(f"✅ Servidor Web de monitoramento iniciado na porta {porta}")
+    print(f"✅ Servidor Web monitorando porta: {port}")
+    
 # ==================== FUNÇÃO PRINCIPAL ====================
 async def main():
     print("Iniciando componentes...")
     
-    bot_client = TelegramClient(MemorySession(), API_ID, API_HASH)
-    
-    await bot_client.start(bot_token=TOKEN)
+    # 1. Inicia o bot com o token dentro do loop ativo
+    await bot.start(bot_token=TOKEN)
     print("✅ Bot conectado ao Telegram!")
 
+    # 2. Inicia o servidor web em segundo plano
     asyncio.create_task(iniciar_servidor_web())
 
+    # 3. Tenta resolver o grupo
     try:
         print(f"Buscando acesso ao grupo {GRUPO_ID}...")
-        await bot_client.get_entity(GRUPO_ID)
-        print("✅ Grupo reconhecido!")
+        await bot.get_entity(GRUPO_ID)
+        print("✅ Grupo reconhecido com sucesso!")
     except Exception as e:
-        print(f"⚠️ Aviso: {e}")
+        print(f"⚠️ Aviso: Grupo ainda não resolvido: {e}")
 
+    print("🚀 BOT INICIADO E ESCUTANDO MENSAGENS!")
+    
+    # 4. Mantém o bot rodando
+    await bot.run_until_disconnected()
 
-    await bot_client.run_until_disconnected()
-
-# ==================== START ====================
+# ==================== EXECUÇÃO ====================
 if __name__ == "__main__":
     try:
+        # Padrão correto para Python 3.13
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
-        pass
-
-# ==================== START ====================
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        print("🛑 Bot parado.")
-
+        print("🛑 Bot desligado.")
