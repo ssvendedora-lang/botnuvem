@@ -891,20 +891,16 @@ async def tratar_info(event):
                     print(f"Falha ao deletar: {delete_e}")
                 return
                 
-# ==================== TAREFA ASSÍNCRONA — BLOQUEIO AUTOMÁTICO (CORRIGIDA) ====================
+# ==================== TAREFA ASSÍNCRONA — BLOQUEIO AUTOMÁTICO ====================
 async def monitorar_horario():
     bloqueado = None
-    print("⏳ Iniciando monitoramento de horário...")
-
-    # Definição dos horários
     inicio_manha = time(9, 0)
     fim_manha = time(11, 0)
     inicio_tarde = time(12, 12)
     fim_tarde = time(22, 0)
 
-while True:
+    while True:
         try:
-            
             fuso_horario = ZoneInfo("America/Sao_Paulo")
             agora = datetime.now(fuso_horario).time()
             
@@ -913,11 +909,9 @@ while True:
             if permitido and bloqueado is not False:
                 try:
                     await bot.edit_permissions(GRUPO_ID, send_messages=True, view_messages=True)
-                    await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nMensagens permitidas a partir de agora!")
-                    print("✅ Grupo liberado pelo horário.")
+                    await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nMensagens permitidas a partir de agora! 🚀")
                 except ChatNotModifiedError:
-                    print("ℹ️ O grupo já estava aberto.")
-                
+                    pass 
                 bloqueado = False
 
             elif not permitido and bloqueado is not True:
@@ -938,11 +932,8 @@ while True:
                         await bot.send_message(GRUPO_ID, mensagem_fechamento)
                     if banner_a_enviar and os.path.exists(banner_a_enviar):
                         await bot.send_file(GRUPO_ID, banner_a_enviar)
-                    
-                    print("🚫 Grupo bloqueado pelo horário.")
                 except ChatNotModifiedError:
-                    print("ℹ️ O grupo já estava bloqueado.")
-                
+                    pass 
                 bloqueado = True
 
         except Exception as e:
@@ -1015,6 +1006,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
