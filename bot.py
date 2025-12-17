@@ -190,6 +190,10 @@ async def is_admin(event, chat_id, user_id):
 # ==================== /menu — MENU INICIAL COM BOTÕES ====================
 @bot.on(events.NewMessage(pattern=r'/menu'))
 async def start(event):
+    # Se a mensagem for privada, o bot simplesmente não executa nada deste bloco
+    if event.is_private:
+        return
+
     buttons = [
         [Button.inline("📋 Listar Membros (admin)", b"listar")],
         [Button.inline("🎲 Sorteio (admin)", b"sorteio")],
@@ -198,9 +202,7 @@ async def start(event):
     ]
     # Adiciona o botão Gemini SE o cliente estiver configurado
     if gemini_client:
-        
         buttons.append([Button.inline("🤖 Use /gemini (texto) para falar com o gemini", b"gemini")])
-        
         buttons.append([Button.inline("🔥 Gerar Copy Ads com Gemini", b"gerar_copy")])
         # NOVO BOTÃO AQUI
         buttons.append([Button.inline("💬 Gerar Texto de Remarketing (X1)", b"gerar_remarketing")]) # <--- NOVO BOTÃO
@@ -1035,3 +1037,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
