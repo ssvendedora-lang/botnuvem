@@ -831,10 +831,10 @@ def horario_permitido():
     fuso_horario = ZoneInfo("America/Sao_Paulo") 
     agora = datetime.now(fuso_horario).time()
     # HORÁRIO DE BLOQUEIO DO GRUPO
-    inicio_manha = time(9, 0)
-    fim_manha = time(11, 0)
-    inicio_tarde = time(12, 12)
-    fim_tarde = time(22, 0)
+    inicio_manha = time(10, 5)
+    fim_manha = time(10, 6)
+    inicio_tarde = time(10, 7)
+    fim_tarde = time(10, 8)
     
     
     return (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
@@ -895,68 +895,72 @@ async def tratar_info(event):
 async def monitorar_horario():
     chat = await bot.get_entity(GRUPO_ID)
     bloqueado = None
-    # HORÁRIO DE BLOQUEIO DO GRUPO
-    inicio_manha = time(9, 0)
-    fim_manha = time(11, 0)
-    inicio_tarde = time(12, 12)
-    fim_tarde = time(22, 0)
-    
+
+    inicio_manha = time(10, 5)
+    fim_manha = time(10, 6)
+    inicio_tarde = time(10, 7)
+    fim_tarde = time(10, 8)
+
     while True:
         permitido = horario_permitido()
         fuso_horario = ZoneInfo("America/Sao_Paulo")
         agora = datetime.now(fuso_horario).time()
-        
+
         banner_a_enviar = None
         mensagem_fechamento = None
 
-        if permitido and bloqueado != False:
-            
+        # 🔓 LIBERAR GRUPO
+        if permitido and bloqueado is not False:
             try:
-                await bot.edit_permissions(chat, send_messages=True)
+                direitos = ChatBannedRights(
+                    until_date=None,
+                    send_messages=False  # False = pode falar
+                )
+                await bot.edit_permissions(chat, rights=direitos)
                 bloqueado = False
                 await bot.send_message(chat, "✅ O grupo foi liberado!")
             except Exception as e:
-                if "wasn't modified" not in str(e):
-                    print(f"Erro ao liberar mensagens: {e}")
+                print(f"Erro ao liberar grupo: {e}")
 
-        elif not permitido and bloqueado != True:
-            
+        # 🔒 BLOQUEAR GRUPO
+        elif not permitido and bloqueado is not True:
             try:
-                
-                await bot.edit_permissions(chat, send_messages=False)
+                direitos = ChatBannedRights(
+                    until_date=None,
+                    send_messages=True  # True = bloqueia
+                )
+                await bot.edit_permissions(chat, rights=direitos)
                 bloqueado = True
-                
-                # BLOQUEIO DE ALMOÇO (11:00 até 12:12)
-                if agora > fim_manha and agora < inicio_tarde:
+
+                # BLOQUEIO DE ALMOÇO
+                if fim_manha < agora < inicio_tarde:
                     banner_a_enviar = CAMINHO_BANNER_INTERVALO
                     mensagem_fechamento = (
                         "🍽️ Pausa para o almoço!"
-                        "\n\nEstamos saindo agora, Voltamos 12:12 ⏰"
+                        "\n\nVoltamos às 12:12 ⏰"
                         "\n\nAté já! 😄"
                     )
-                    
-                # BLOQUEIO NOTURNO (Após 22:00 ou Antes de 9:00)
+
+                # BLOQUEIO NOTURNO
                 elif agora > fim_tarde or agora < inicio_manha:
                     banner_a_enviar = CAMINHO_BANNER_ENCERRAMENTO
                     mensagem_fechamento = (
                         "🌙 Suporte encerrado!"
-                        "\n\nRetornamos amanhã às 9:00h da manhã ⏰"
-                        "\n\nBom descanso e até lá! 😊"
+                        "\n\nRetornamos amanhã às 9:00 ⏰"
+                        "\n\nBom descanso! 😊"
                     )
 
                 if mensagem_fechamento:
                     await bot.send_message(chat, mensagem_fechamento)
-                
+
                 if banner_a_enviar and os.path.exists(banner_a_enviar):
                     await bot.send_file(chat, banner_a_enviar)
-                # -----------------------------------------------------
 
             except Exception as e:
-                if "wasn't modified" not in str(e):
-                    print(f"Erro ao bloquear mensagens: {e}")
+                print(f"Erro ao bloquear grupo: {e}")
 
         await asyncio.sleep(30)
-
+        
 # ==================== MONITORAMENTO DE PALAVRAS PROIBIDAS ====================
 @bot.on(events.NewMessage(func=lambda e: e.is_group))
 async def filtro_palavras(event):
@@ -1058,4 +1062,5 @@ if __name__ == '__main__':
         print("Bot desligado manualmente.")
     except Exception as e:
         print(f"❌ Erro fatal na execução: {e}")
+
 
