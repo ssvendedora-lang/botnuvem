@@ -841,10 +841,10 @@ def horario_permitido():
     fuso_horario = ZoneInfo("America/Sao_Paulo") 
     agora = datetime.now(fuso_horario).time()
     # HORÁRIO DE BLOQUEIO DO GRUPO
-    inicio_manha = time(13, 50)
-    fim_manha = time(13, 51)
-    inicio_tarde = time(13, 52)
-    fim_tarde = time(13, 53)
+    inicio_manha = time(14, 15)
+    fim_manha = time(14, 16)
+    inicio_tarde = time(14, 17)
+    fim_tarde = time(14, 18)
     
     
     return (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
@@ -891,79 +891,63 @@ async def tratar_info(event):
                     print(f"Falha ao deletar: {delete_e}")
                 return
                 
-# ==================== TAREFA ASSÍNCRONA — BLOQUEIO AUTOMÁTICO (MODIFICADA) ====================
+# ==================== TAREFA ASSÍNCRONA — BLOQUEIO AUTOMÁTICO (CORRIGIDA) ====================
 async def monitorar_horario():
     bloqueado = None
+    print("⏳ Iniciando monitoramento de horário...")
 
-    try:
-        chat = await bot.get_input_entity(GRUPO_ID)
-        print("✅ Entidade do grupo carregada para monitoramento.")
-    except Exception as e:
-        print(f"❌ Erro ao resolver grupo no monitoramento: {e}")
-        return
-
-    inicio_manha = time(13, 50)
-    fim_manha = time(13, 51)
-    inicio_tarde = time(13, 52)
-    fim_tarde = time(13, 53)
+    # Definição dos horários
+    inicio_manha = time(14, 15)
+    fim_manha = time(14, 16)
+    inicio_tarde = time(14, 17)
+    fim_tarde = time(14, 18)
 
     while True:
-        permitido = horario_permitido()
-        fuso_horario = ZoneInfo("America/Sao_Paulo")
-        agora = datetime.now(fuso_horario).time()
+        try:
+            fuso_horario = ZoneInfo("America/Sao_Paulo")
+            agora = datetime.now(fuso_horario).time()
+            
+            permitido = (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
 
-        banner_a_enviar = None
-        mensagem_fechamento = None
-
-        # 🔓 LIBERAR GRUPO
-        if permitido and bloqueado is not False:
-            try:
-                direitos = ChatBannedRights(
-                    until_date=None,
-                    send_messages=False  # False = pode falar
+            if permitido and bloqueado is not False:
+                await bot.edit_permissions(
+                    GRUPO_ID, 
+                    send_messages=True, 
+                    view_messages=True
                 )
-                await bot.edit_permissions(chat, rights=direitos)
                 bloqueado = False
-                await bot.send_message(chat, "✅ O grupo foi liberado!")
-            except Exception as e:
-                print(f"Erro ao liberar grupo: {e}")
+                await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nPixel aquecido e criativos aprovados. Podem mandar bala! 🚀")
+                print("✅ Grupo liberado pelo horário.")
 
-        # 🔒 BLOQUEAR GRUPO
-        elif not permitido and bloqueado is not True:
-            try:
-                direitos = ChatBannedRights(
-                    until_date=None,
-                    send_messages=True  # True = bloqueia
+            elif not permitido and bloqueado is not True:
+                await bot.edit_permissions(
+                    GRUPO_ID, 
+                    send_messages=False, 
+                    view_messages=True
                 )
-                await bot.edit_permissions(chat, rights=direitos)
                 bloqueado = True
 
-                # BLOQUEIO DE ALMOÇO
+                mensagem_fechamento = ""
+                banner_a_enviar = None
+
                 if fim_manha < agora < inicio_tarde:
                     banner_a_enviar = CAMINHO_BANNER_INTERVALO
-                    mensagem_fechamento = (
-                        "🍽️ Pausa para o almoço!"
-                        "\n\nVoltamos às 12:12 ⏰"
-                        "\n\nAté já! 😄"
-                    )
-
-                # BLOQUEIO NOTURNO
+                    mensagem_fechamento = "🍽️ **Pausa para o almoço!**\n\nVoltamos às 12:12 ⏰\nAté já! 😄"
+                
                 elif agora > fim_tarde or agora < inicio_manha:
                     banner_a_enviar = CAMINHO_BANNER_ENCERRAMENTO
-                    mensagem_fechamento = (
-                        "🌙 Suporte encerrado!"
-                        "\n\nRetornamos amanhã às 9:00 ⏰"
-                        "\n\nBom descanso! 😊"
-                    )
+                    mensagem_fechamento = "🌙 **Suporte encerrado!**\n\nRetornamos amanhã às 9:00 ⏰\nBom descanso! 😊"
 
                 if mensagem_fechamento:
-                    await bot.send_message(chat, mensagem_fechamento)
-
+                    await bot.send_message(GRUPO_ID, mensagem_fechamento)
+                
                 if banner_a_enviar and os.path.exists(banner_a_enviar):
-                    await bot.send_file(chat, banner_a_enviar)
+                    await bot.send_file(GRUPO_ID, banner_a_enviar)
+                
+                print("🚫 Grupo bloqueado pelo horário.")
 
-            except Exception as e:
-                print(f"Erro ao bloquear grupo: {e}")
+        except Exception as e:
+            print(f"❌ Erro no monitoramento: {e}")
 
         await asyncio.sleep(30)
         
@@ -1009,14 +993,12 @@ async def iniciar_servidor_web():
 async def main():
     print("Iniciando componentes...")
     
-    # 1. Inicia o bot com o token dentro do loop ativo
     await bot.start(bot_token=TOKEN)
     print("✅ Bot conectado ao Telegram!")
 
-    # 2. Inicia o servidor web em segundo plano
     asyncio.create_task(iniciar_servidor_web())
+    asyncio.create_task(monitorar_horario())
 
-    # 3. Tenta resolver o grupo
     try:
         print(f"Buscando acesso ao grupo {GRUPO_ID}...")
         await bot.get_entity(GRUPO_ID)
@@ -1026,17 +1008,12 @@ async def main():
 
     print("🚀 BOT INICIADO E ESCUTANDO MENSAGENS!")
     
-    # 4. Mantém o bot rodando
     await bot.run_until_disconnected()
 
 # ==================== EXECUÇÃO ====================
 if __name__ == "__main__":
     try:
-        # Padrão correto para Python 3.13
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
-
-
-
 
