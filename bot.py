@@ -3,7 +3,8 @@ import random
 import os
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
-
+from telethon.tl.types import InputPeerChannel
+from telethon.utils import get_peer_id
 from telethon import TelegramClient, events, Button
 from telethon.tl.types import PeerUser, ChatBannedRights
 
@@ -831,10 +832,10 @@ def horario_permitido():
     fuso_horario = ZoneInfo("America/Sao_Paulo") 
     agora = datetime.now(fuso_horario).time()
     # HORÁRIO DE BLOQUEIO DO GRUPO
-    inicio_manha = time(10, 30)
-    fim_manha = time(10, 31)
-    inicio_tarde = time(10, 32)
-    fim_tarde = time(10, 33)
+    inicio_manha = time(9, 0)
+    fim_manha = time(11, 0)
+    inicio_tarde = time(12, 12)
+    fim_tarde = time(22, 0)
     
     
     return (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
@@ -893,13 +894,19 @@ async def tratar_info(event):
                 
 # ==================== TAREFA ASSÍNCRONA — BLOQUEIO AUTOMÁTICO (MODIFICADA) ====================
 async def monitorar_horario():
-    chat = await bot.get_entity(GRUPO_ID)
     bloqueado = None
 
-    inicio_manha = time(10, 30)
-    fim_manha = time(10, 31)
-    inicio_tarde = time(10, 32)
-    fim_tarde = time(10, 33)
+    try:
+        chat = await bot.get_input_entity(GRUPO_ID)
+        print("✅ Entidade do grupo carregada para monitoramento.")
+    except Exception as e:
+        print(f"❌ Erro ao resolver grupo no monitoramento: {e}")
+        return
+
+    inicio_manha = time(9, 0)
+    fim_manha = time(11, 0)
+    inicio_tarde = time(12, 12)
+    fim_tarde = time(22, 0)
 
     while True:
         permitido = horario_permitido()
@@ -1053,5 +1060,6 @@ async def main():
 
 # ==================== START ====================
 if __name__ == "__main__":
-    with bot:
-        bot.loop.run_until_complete(main())
+    import asyncio
+    asyncio.run(main())
+    
