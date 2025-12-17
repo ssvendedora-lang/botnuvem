@@ -831,10 +831,10 @@ def horario_permitido():
     fuso_horario = ZoneInfo("America/Sao_Paulo") 
     agora = datetime.now(fuso_horario).time()
     # HORÁRIO DE BLOQUEIO DO GRUPO
-    inicio_manha = time(10, 5)
-    fim_manha = time(10, 6)
-    inicio_tarde = time(10, 7)
-    fim_tarde = time(10, 8)
+    inicio_manha = time(10, 25)
+    fim_manha = time(10, 26)
+    inicio_tarde = time(10, 27)
+    fim_tarde = time(10, 28)
     
     
     return (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
@@ -896,10 +896,10 @@ async def monitorar_horario():
     chat = await bot.get_entity(GRUPO_ID)
     bloqueado = None
 
-    inicio_manha = time(10, 5)
-    fim_manha = time(10, 6)
-    inicio_tarde = time(10, 7)
-    fim_tarde = time(10, 8)
+    inicio_manha = time(10, 25)
+    fim_manha = time(10, 26)
+    inicio_tarde = time(10, 27)
+    fim_tarde = time(10, 28)
 
     while True:
         permitido = horario_permitido()
@@ -1007,25 +1007,22 @@ async def iniciar_servidor_web():
 async def main():
     print("Iniciando componentes...")
 
-    # 1. Tenta reconhecer o grupo antes de iniciar as tarefas de monitoramento
-    # Isso resolve o erro de 'Could not find the input entity'
     try:
         print(f"Buscando acesso ao grupo {GRUPO_ID}...")
         await bot.get_entity(GRUPO_ID)
         print("✅ Grupo reconhecido com sucesso!")
     except Exception as e:
         print(f"⚠️ Aviso: Não foi possível encontrar o grupo de imediato: {e}")
-        print("O bot tentará continuar, mas o monitoramento de horário pode falhar até que alguém mande mensagem no grupo.")
 
-    # 2. Inicia o servidor Web para o Render (ESSENCIAL)
-    # Iniciamos antes do monitoramento para evitar Port Timeout se o monitoramento demorar
+    # inicia servidor web (Render)
     await iniciar_servidor_web()
-    
-    # 3. Inicia o monitoramento de horário em segundo plano
-    bot.loop.create_task(monitorar_horario())
-    
+
+    # inicia monitoramento de horário
+    asyncio.create_task(monitorar_horario())
+
     print("🚀 BOT INICIADO!")
-    print("Comandos disponíveis: /menu ; /gemini e /info @(usuário)")
+    print("Comandos disponíveis: /menu ; /gemini ; /info")
+
     print(r"""
  ░░░░░░░░░░░▓███████████████▓░░░░░░░░░░░ 
  ░░░░░░░░▓███░░░░░░░░░░░░░░░████░░░░░░░░ 
@@ -1051,16 +1048,15 @@ async def main():
       -      TELEGRAM MVM BOT INICIADO      -
 """)
 
-    # 4. Mantém o cliente do Telegram rodando
+    # mantém o bot ativo
     await bot.run_until_disconnected()
 
-if __name__ == '__main__':
+
+# ==================== START ====================
+if __name__ == "__main__":
     try:
-        # Roda o loop principal
-        bot.loop.run_until_complete(main())
+        asyncio.run(main())
     except KeyboardInterrupt:
         print("Bot desligado manualmente.")
     except Exception as e:
         print(f"❌ Erro fatal na execução: {e}")
-
-
