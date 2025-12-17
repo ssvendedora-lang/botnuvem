@@ -904,6 +904,7 @@ async def monitorar_horario():
 
 while True:
         try:
+            
             fuso_horario = ZoneInfo("America/Sao_Paulo")
             agora = datetime.now(fuso_horario).time()
             
@@ -1014,6 +1015,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
