@@ -1009,24 +1009,31 @@ async def iniciar_servidor_web():
     print(f"✅ Servidor Web de monitoramento iniciado na porta {porta}")
 # ==================== FUNÇÃO PRINCIPAL ====================
 async def main():
-    
     print("Iniciando componentes...")
-
-    await bot.start(bot_token=TOKEN)
+    
+    bot_client = TelegramClient(MemorySession(), API_ID, API_HASH)
+    
+    await bot_client.start(bot_token=TOKEN)
     print("✅ Bot conectado ao Telegram!")
 
     asyncio.create_task(iniciar_servidor_web())
 
     try:
         print(f"Buscando acesso ao grupo {GRUPO_ID}...")
-        await bot.get_entity(GRUPO_ID)
-        print("✅ Grupo reconhecido com sucesso!")
+        await bot_client.get_entity(GRUPO_ID)
+        print("✅ Grupo reconhecido!")
     except Exception as e:
-        print(f"⚠️ Aviso: Grupo ainda não resolvido: {e}")
+        print(f"⚠️ Aviso: {e}")
 
-    print("🚀 BOT INICIADO!")
 
-    await bot.run_until_disconnected()
+    await bot_client.run_until_disconnected()
+
+# ==================== START ====================
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        pass
 
 # ==================== START ====================
 if __name__ == "__main__":
@@ -1034,3 +1041,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot parado.")
+
