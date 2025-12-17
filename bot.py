@@ -7,7 +7,7 @@ from telethon.tl.types import InputPeerChannel
 from telethon.utils import get_peer_id
 from telethon import TelegramClient, events, Button
 from telethon.tl.types import PeerUser, ChatBannedRights
-
+from telethon.sessions import MemorySession
 from google import genai
 from google.genai.errors import APIError
 
@@ -119,7 +119,7 @@ palavras_proibidas = [
 
 # ==================== CLIENT ====================
 
-bot = TelegramClient('bot_membros_sessao', API_ID, API_HASH).start(bot_token=TOKEN)
+bot = TelegramClient(MemorySession(), API_ID, API_HASH).start(bot_token=TOKEN)
 
 # ==================== FUNÇÃO — LISTAR MEMBROS POR DATA DE ENTRADA ====================
 async def listar_membros_com_data():
@@ -1003,25 +1003,19 @@ async def iniciar_servidor_web():
     runner = web.AppRunner(app)
     await runner.setup()
     
-    # O Render fornece a porta automaticamente nesta variável. 
-    # Usamos 10000 como padrão caso esteja testando localmente.
     porta = int(os.getenv("PORT", 10000))
     site = web.TCPSite(runner, "0.0.0.0", porta)
     await site.start()
     print(f"✅ Servidor Web de monitoramento iniciado na porta {porta}")
-
 # ==================== FUNÇÃO PRINCIPAL ====================
 async def main():
-    global bot
-    print("Iniciando componentes...")
-
-    bot = TelegramClient('bot_membros_sessao', API_ID, API_HASH)
     
+    print("Iniciando componentes...")
 
     await bot.start(bot_token=TOKEN)
     print("✅ Bot conectado ao Telegram!")
 
-    await iniciar_servidor_web()
+    asyncio.create_task(iniciar_servidor_web())
 
     try:
         print(f"Buscando acesso ao grupo {GRUPO_ID}...")
@@ -1036,8 +1030,7 @@ async def main():
 
 # ==================== START ====================
 if __name__ == "__main__":
-    
     try:
         asyncio.run(main())
-    except KeyboardInterrupt:
-        pass
+    except (KeyboardInterrupt, SystemExit):
+        print("🛑 Bot parado.")
