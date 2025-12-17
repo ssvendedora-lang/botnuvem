@@ -45,11 +45,14 @@ copy_conversations = {}
 
 # ==================== FRASES PARA O PRIVADO ====================
 frases_privado = [
-    "❌ No PV eu fico sem bateria… me chama no grupo! ⚡😂",
-    "❌ Aqui no privado eu travo igual celular velho 🤖📵 Vai lá no grupo!",
-    "❌ Eu só funciono 100% no grupo. No PV eu sou turista 😎✈️",
-    "❌ Eita… no privado eu não trabalho não 😅 Me usa no grupo!",
-    "❌ Meu contrato diz que no PV eu descanso 😴 Me chama lá no grupo!"
+    "❌ Errou o caminho! 🗺️ O comando /menu só brilha lá no grupo!",
+    "❌ Falar no PV dá azar! 😰 Corre lá no grupo e usa o comando /menu!",
+    "❌ O RH me proibiu de trabalhar no privado 🚫👔 Digita /menu lá no grupo!",
+    "❌ Minha inteligência ficou no grupo, aqui só sobrou o vácuo 🌌 Me chama lá com /menu!",
+    "❌ Quer falar comigo? No PV eu cobro caro! 💸 No grupo o /menu é de graça!",
+    "❌ Shhh! 🤫 No privado eu tô tirando um cochilo. Me acorda no grupo usando /menu!",
+    "❌ O comando /menu no privado é igual feriado no domingo: não serve pra nada! 😂 Vai pro grupo!",
+    "❌ PV bloqueado para manutenção! 🚧 A diversão com o /menu acontece no grupo!"
 ]
 
 # ==================== PALAVRAS PROIBIDAS ====================
@@ -189,10 +192,10 @@ async def is_admin(event, chat_id, user_id):
 
 # ==================== /menu — MENU INICIAL COM BOTÕES ====================
 @bot.on(events.NewMessage(pattern=r'/menu'))
-async def start(event):
-    # Se a mensagem for privada, o bot simplesmente não executa nada deste bloco
+async def menu_handler(event):
+    
     if event.is_private:
-        return
+        raise events.StopPropagation
 
     buttons = [
         [Button.inline("📋 Listar Membros (admin)", b"listar")],
@@ -200,12 +203,11 @@ async def start(event):
         [Button.inline("ℹ Consultar Informações de usuários (admin)", b"info")],
         [Button.inline("📄 Exportar Membros (admin)", b"exportar")]
     ]
-    # Adiciona o botão Gemini SE o cliente estiver configurado
+    
     if gemini_client:
         buttons.append([Button.inline("🤖 Use /gemini (texto) para falar com o gemini", b"gemini")])
         buttons.append([Button.inline("🔥 Gerar Copy Ads com Gemini", b"gerar_copy")])
-        # NOVO BOTÃO AQUI
-        buttons.append([Button.inline("💬 Gerar Texto de Remarketing (X1)", b"gerar_remarketing")]) # <--- NOVO BOTÃO
+        buttons.append([Button.inline("💬 Gerar Texto de Remarketing (X1)", b"gerar_remarketing")])
         
     await event.respond(
         "👋 *Olá! Escolha uma função abaixo:*",
@@ -213,6 +215,8 @@ async def start(event):
         parse_mode="markdown",
         reply_to=event.message.id
     )
+    
+    raise events.StopPropagation
 
 # ==================== BOTÃO: LISTAR MEMBROS (RESTRITO A ADMIN) ====================
 @bot.on(events.CallbackQuery(data=b"listar"))
@@ -841,55 +845,45 @@ def horario_permitido():
     return (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
 
 # ==================== CAPTURA DE MENSAGENS — BLOQUEIO DO PRIVADO, HORÁRIO E PALAVRAS ====================
-@bot.on(events.NewMessage())
+@bot.on(events.NewMessage(incoming=True))
 async def tratar_info(event):
     
+    if event.out:
+        return
+
     key = (event.sender_id, event.chat_id)
-    
     if key in copy_conversations:
-        
         return 
 
     if event.is_private:
         await event.respond(random.choice(frases_privado), reply_to=event.message.id)
-        return
+        raise events.StopPropagation
 
     if event.raw_text and event.raw_text.startswith("/"):
         return
 
     if event.raw_text:
         texto_msg = event.raw_text.lower()
-        
         texto_normalizado = texto_msg.replace(" ", "").replace(".", "")
 
         for palavra in palavras_proibidas:
             palavra_normalizada = palavra.lower().replace(" ", "").replace(".", "")
             if palavra_normalizada in texto_normalizado:
-                
                 user = None
                 try:
                     user = await event.get_sender()
                 except:
                     pass
                 
-                
                 agora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                user_info = f"{user.first_name} (ID: {user.id} | @{user.username})" if user and user.username else f"{user.first_name} (ID: {user.id})" if user else "Desconhecido"
+                user_info = f"{user.first_name} (ID: {user.id})" if user else "Desconhecido"
                 
-                print("=========================================")
-                print("🚨 MENSAGEM BANIDA DETECTADA 🚨")
-                print(f"Usuário que enviou: {user_info}")
-                print(f"Texto da Mensagem: '{event.raw_text}'")
-                print(f"Motivo do Banimento: Contém a palavra proibida '{palavra}'")
-                print(f"Data/Hora: {agora}")
-                print("=========================================\n")
-                
+                print(f"🚨 MENSAGEM BANIDA: {user_info} enviou '{palavra}'")
                 
                 try:
                     await event.delete()
                 except Exception as delete_e:
-                    print(f"Falha ao deletar a mensagem: {delete_e}")
-                    
+                    print(f"Falha ao deletar: {delete_e}")
                 return
                 
 # ==================== TAREFA ASSÍNCRONA — BLOQUEIO AUTOMÁTICO (MODIFICADA) ====================
@@ -1037,4 +1031,5 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
