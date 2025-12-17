@@ -45,14 +45,19 @@ copy_conversations = {}
 
 # ==================== FRASES PARA O PRIVADO ====================
 frases_privado = [
-    "❌ Errou o caminho! 🗺️ O comando /menu só brilha lá no grupo!",
-    "❌ Falar no PV dá azar! 😰 Corre lá no grupo e usa o comando /menu!",
-    "❌ O RH me proibiu de trabalhar no privado 🚫👔 Digita /menu lá no grupo!",
-    "❌ Minha inteligência ficou no grupo, aqui só sobrou o vácuo 🌌 Me chama lá com /menu!",
-    "❌ Quer falar comigo? No PV eu cobro caro! 💸 No grupo o /menu é de graça!",
-    "❌ Shhh! 🤫 No privado eu tô tirando um cochilo. Me acorda no grupo usando /menu!",
-    "❌ O comando /menu no privado é igual feriado no domingo: não serve pra nada! 😂 Vai pro grupo!",
-    "❌ PV bloqueado para manutenção! 🚧 A diversão com o /menu acontece no grupo!"
+    "❌ No PV eu sou igual Pixel não instalado: não rastreio nada! 📡 Va lá no grupo e digita /menu!",
+    "❌ Aqui no privado minha BM caiu e o suporte do Zuck não responde! 📉 Me chama no grupo com /menu!",
+    "❌ Erro de Criativo! 🚩 No privado eu recebi um Shadowban. Digita /menu lá no grupo!",
+    "❌ Falar no PV é igual rodar anúncio sem público: não dá conversão! 💸 Vai pro grupo usar o /menu!",
+    "❌ Minha Contingência não permite papo no privado hoje! 🛡️ Me aciona no grupo com o /menu!",
+    "❌ CBO ativado: foquei todo o meu orçamento no grupo! 💰 Digita /menu lá para falar comigo!",
+    "❌ O Facebook me bloqueou no PV por atividade suspeita! 👮‍♂️ Me encontra no grupo usando /menu!",
+    "❌ Minha esteira de aquecimento ainda não chegou no PV! 🔥 Me usa no grupo com o /menu!",
+    "❌ Público Lookalike detectado no privado: bloqueando acesso! 👤❌ Vá para o grupo e use o /menu!",
+    "❌ CPA no privado tá muito alto! 📈 Prefiro converter lá no grupo com o comando /menu!",
+    "❌ Minha Landing Page deu 404 no privado! 🚧 Me chama lá no grupo usando o /menu!",
+    "❌ Estou em fase de aprendizado no PV e não respondo ninguém! 🧠 Digita /menu lá no grupo!",
+    "❌ Minha API de conversão deu erro no PV! 📉 Só funciono no grupo via /menu!"
 ]
 
 # ==================== PALAVRAS PROIBIDAS ====================
@@ -1031,5 +1036,6 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
