@@ -841,10 +841,10 @@ def horario_permitido():
     fuso_horario = ZoneInfo("America/Sao_Paulo") 
     agora = datetime.now(fuso_horario).time()
     # HORÁRIO DE BLOQUEIO DO GRUPO
-    inicio_manha = time(14, 15)
-    fim_manha = time(14, 16)
-    inicio_tarde = time(14, 17)
-    fim_tarde = time(14, 18)
+    inicio_manha = time(14, 30)
+    fim_manha = time(14, 31)
+    inicio_tarde = time(14, 32)
+    fim_tarde = time(14, 33)
     
     
     return (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
@@ -897,10 +897,10 @@ async def monitorar_horario():
     print("⏳ Iniciando monitoramento de horário...")
 
     # Definição dos horários
-    inicio_manha = time(14, 15)
-    fim_manha = time(14, 16)
-    inicio_tarde = time(14, 17)
-    fim_tarde = time(14, 18)
+    inicio_manha = time(14, 30)
+    fim_manha = time(14, 31)
+    inicio_tarde = time(14, 32)
+    fim_tarde = time(14, 33)
 
     while True:
         try:
@@ -916,7 +916,7 @@ async def monitorar_horario():
                     view_messages=True
                 )
                 bloqueado = False
-                await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nPixel aquecido e criativos aprovados. Podem mandar bala! 🚀")
+                await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nMensagens permitidas a partir de agora!")
                 print("✅ Grupo liberado pelo horário.")
 
             elif not permitido and bloqueado is not True:
@@ -1016,4 +1016,5 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
