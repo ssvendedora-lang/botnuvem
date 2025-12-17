@@ -1014,6 +1014,9 @@ async def iniciar_servidor_web():
 async def main():
     print("Iniciando componentes...")
 
+    # ✅ conecta no loop correto
+    await bot.start(bot_token=TOKEN)
+
     try:
         print(f"Buscando acesso ao grupo {GRUPO_ID}...")
         await bot.get_entity(GRUPO_ID)
@@ -1024,8 +1027,8 @@ async def main():
     # servidor web (Render)
     await iniciar_servidor_web()
 
-    # monitoramento (usa O MESMO LOOP do Telethon)
-    bot.loop.create_task(monitorar_horario())
+    # monitoramento
+    asyncio.create_task(monitorar_horario())
 
     print("🚀 BOT INICIADO!")
     print("Comandos disponíveis: /menu ; /gemini ; /info")
@@ -1056,7 +1059,6 @@ async def main():
 """)
 
     await bot.run_until_disconnected()
-
 
 # ==================== START ====================
 if __name__ == "__main__":
