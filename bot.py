@@ -8,6 +8,7 @@ from telethon.utils import get_peer_id
 from telethon import TelegramClient, events, Button
 from telethon.tl.types import PeerUser, ChatBannedRights
 from telethon.sessions import MemorySession
+from telethon.errors import ChatNotModifiedError
 from google import genai
 from google.genai.errors import APIError
 from aiohttp import web
@@ -840,11 +841,10 @@ def horario_permitido():
     
     fuso_horario = ZoneInfo("America/Sao_Paulo") 
     agora = datetime.now(fuso_horario).time()
-    # HORÁRIO DE BLOQUEIO DO GRUPO
-    inicio_manha = time(14, 30)
-    fim_manha = time(14, 31)
-    inicio_tarde = time(14, 32)
-    fim_tarde = time(14, 33)
+    inicio_manha = time(9, 0)
+    fim_manha = time(11, 0)
+    inicio_tarde = time(12, 12)
+    fim_tarde = time(22, 0)
     
     
     return (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
@@ -897,12 +897,12 @@ async def monitorar_horario():
     print("⏳ Iniciando monitoramento de horário...")
 
     # Definição dos horários
-    inicio_manha = time(14, 30)
-    fim_manha = time(14, 31)
-    inicio_tarde = time(14, 32)
-    fim_tarde = time(14, 33)
+    inicio_manha = time(9, 0)
+    fim_manha = time(11, 0)
+    inicio_tarde = time(12, 12)
+    fim_tarde = time(22, 0)
 
-    while True:
+while True:
         try:
             fuso_horario = ZoneInfo("America/Sao_Paulo")
             agora = datetime.now(fuso_horario).time()
@@ -910,44 +910,42 @@ async def monitorar_horario():
             permitido = (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
 
             if permitido and bloqueado is not False:
-                await bot.edit_permissions(
-                    GRUPO_ID, 
-                    send_messages=True, 
-                    view_messages=True
-                )
+                try:
+                    await bot.edit_permissions(GRUPO_ID, send_messages=True, view_messages=True)
+                    await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nMensagens permitidas a partir de agora!")
+                    print("✅ Grupo liberado pelo horário.")
+                except ChatNotModifiedError:
+                    print("ℹ️ O grupo já estava aberto.")
+                
                 bloqueado = False
-                await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nMensagens permitidas a partir de agora!")
-                print("✅ Grupo liberado pelo horário.")
 
             elif not permitido and bloqueado is not True:
-                await bot.edit_permissions(
-                    GRUPO_ID, 
-                    send_messages=False, 
-                    view_messages=True
-                )
+                try:
+                    await bot.edit_permissions(GRUPO_ID, send_messages=False, view_messages=True)
+                    
+                    mensagem_fechamento = ""
+                    banner_a_enviar = None
+
+                    if fim_manha < agora < inicio_tarde:
+                        banner_a_enviar = CAMINHO_BANNER_INTERVALO
+                        mensagem_fechamento = "🍽️ **Pausa para o almoço!**\n\nVoltamos às 12:12 ⏰\nAté já! 😄"
+                    elif agora > fim_tarde or agora < inicio_manha:
+                        banner_a_enviar = CAMINHO_BANNER_ENCERRAMENTO
+                        mensagem_fechamento = "🌙 **Suporte encerrado!**\n\nRetornamos amanhã às 9:00 ⏰\nBom descanso! 😊"
+
+                    if mensagem_fechamento:
+                        await bot.send_message(GRUPO_ID, mensagem_fechamento)
+                    if banner_a_enviar and os.path.exists(banner_a_enviar):
+                        await bot.send_file(GRUPO_ID, banner_a_enviar)
+                    
+                    print("🚫 Grupo bloqueado pelo horário.")
+                except ChatNotModifiedError:
+                    print("ℹ️ O grupo já estava bloqueado.")
+                
                 bloqueado = True
 
-                mensagem_fechamento = ""
-                banner_a_enviar = None
-
-                if fim_manha < agora < inicio_tarde:
-                    banner_a_enviar = CAMINHO_BANNER_INTERVALO
-                    mensagem_fechamento = "🍽️ **Pausa para o almoço!**\n\nVoltamos às 12:12 ⏰\nAté já! 😄"
-                
-                elif agora > fim_tarde or agora < inicio_manha:
-                    banner_a_enviar = CAMINHO_BANNER_ENCERRAMENTO
-                    mensagem_fechamento = "🌙 **Suporte encerrado!**\n\nRetornamos amanhã às 9:00 ⏰\nBom descanso! 😊"
-
-                if mensagem_fechamento:
-                    await bot.send_message(GRUPO_ID, mensagem_fechamento)
-                
-                if banner_a_enviar and os.path.exists(banner_a_enviar):
-                    await bot.send_file(GRUPO_ID, banner_a_enviar)
-                
-                print("🚫 Grupo bloqueado pelo horário.")
-
         except Exception as e:
-            print(f"❌ Erro no monitoramento: {e}")
+            print(f"❌ Erro crítico no monitoramento: {e}")
 
         await asyncio.sleep(30)
         
@@ -1016,5 +1014,6 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
