@@ -841,10 +841,10 @@ def horario_permitido():
     fuso_horario = ZoneInfo("America/Sao_Paulo") 
     agora = datetime.now(fuso_horario).time()
     # HORÁRIO DE BLOQUEIO DO GRUPO
-    inicio_manha = time(9, 0)
-    fim_manha = time(11, 0)
-    inicio_tarde = time(12, 12)
-    fim_tarde = time(22, 0)
+    inicio_manha = time(13, 50)
+    fim_manha = time(13, 51)
+    inicio_tarde = time(13, 52)
+    fim_tarde = time(13, 53)
     
     
     return (inicio_manha <= agora <= fim_manha) or (inicio_tarde <= agora <= fim_tarde)
@@ -902,10 +902,10 @@ async def monitorar_horario():
         print(f"❌ Erro ao resolver grupo no monitoramento: {e}")
         return
 
-    inicio_manha = time(9, 0)
-    fim_manha = time(11, 0)
-    inicio_tarde = time(12, 12)
-    fim_tarde = time(22, 0)
+    inicio_manha = time(13, 50)
+    fim_manha = time(13, 51)
+    inicio_tarde = time(13, 52)
+    fim_tarde = time(13, 53)
 
     while True:
         permitido = horario_permitido()
@@ -1036,6 +1036,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
