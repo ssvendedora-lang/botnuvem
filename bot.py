@@ -123,7 +123,7 @@ palavras_proibidas = [
 "desistir", "d3sistir", "d3sist1r", "desist1r", "d3sist", "desist",
 "disisto", "d1sisto", "d1sist0", "disist0",
 "diesato", "d1esat0", "d1esato", "diesat0",
-"go1pe", "g0lpe2", "go1p3", "g0lpii", "golep", "goulpe", "golpex", "gople", "g0ple", "g0lpão", "g0lpzão",
+"go1pe", "gorpe", "gorpe2", "g0lpe2", "go1p3", "g0lpii", "golep", "goulpe", "golpex", "gople", "g0ple", "g0lpão", "g0lpzão",
 "m3ntirã", "m3nt1ra", "m3nt1r4", "mnetira", "mentirz",
 "d3sistiu", "d3sisto", "desistiu", "d1esatoo", "ab4ndono", "abandono", "abandonar", "l4rgar", "largar", "larguei"
 ]
@@ -914,7 +914,7 @@ async def monitorar_horario():
                     await bot.edit_permissions(GRUPO_ID, send_messages=True, view_messages=True)
                     
                     for tid in TOPICOS_PARA_AVISAR:
-                        await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nMensagens liberadas! 🚀", reply_to=tid)
+                        await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nMensagens permitidas a partir de agora! 🚀", reply_to=tid)
                 except ChatNotModifiedError:
                     pass
                 bloqueado = False
@@ -928,7 +928,7 @@ async def monitorar_horario():
 
                     if fim_manha < agora < inicio_tarde:
                         banner_a_enviar = CAMINHO_BANNER_INTERVALO
-                        msg_fechamento = "🍽️ **Pausa para o almoço!**\n\nVoltamos às 12:12 ⏰\nAté já! 😄"
+                        msg_fechamento = "🍽️ **Pausa para o almoço!**\n\nVoltamos às 12:40 ⏰\nAté já! 😄"
                     elif agora > fim_tarde or agora < inicio_manha:
                         banner_a_enviar = CAMINHO_BANNER_ENCERRAMENTO
                         msg_fechamento = "🌙 **Suporte encerrado!**\n\nRetornamos amanhã às 9:00 ⏰\nBom descanso! 😊"
@@ -1013,6 +1013,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
