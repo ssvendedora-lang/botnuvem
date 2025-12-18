@@ -158,32 +158,24 @@ async def listar_membros_com_data():
 
     return texto
 
-# ==================== FUNÇÃO AUXILIAR CORRIGIDA ====================
+# ==================== FUNÇÃO AUXILIAR DEFINITIVA PARA TÓPICOS ====================
 async def respond_in_thread(event, texto):
-    chat = await event.get_chat()
-
-    msg = getattr(event, 'message', None)
-    if not msg and callable(getattr(event, 'get_message', None)):
-        msg = await event.get_message()
+    msg = await event.get_message()
     
-    if len(texto) > 4096: 
+    if not msg and hasattr(event, 'message'):
+        msg = event.message
+
+    if not msg:
+        await event.respond(texto, parse_mode="markdown")
+        return
+
+    if len(texto) > 4096:
         partes = [texto[i:i+4000] for i in range(0, len(texto), 4000)]
         for parte in partes:
-            await event.client.send_message(
-                chat, 
-                parte, 
-                parse_mode="markdown", 
-                reply_to=msg
-            )
-    else:
-        await event.client.send_message(
-            chat, 
-            texto, 
-            parse_mode="markdown", 
-            reply_to=msg
-        )
 
-# --- FUNÇÕES AUXILIARES ACIMA ---
+            await msg.reply(parte, parse_mode="markdown")
+    else:
+        await msg.reply(texto, parse_mode="markdown")
 
 # ==================== /menu — MENU INICIAL COM BOTÕES ====================
 @bot.on(events.NewMessage(pattern=r'/menu'))
@@ -1002,6 +994,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
