@@ -158,41 +158,29 @@ async def listar_membros_com_data():
 
     return texto
 
-# ==================== FUNÇÃO AUXILIAR PARA RESPONDER NO MESMO TÓPICO (CORRIGIDA) ====================
+# ==================== FUNÇÃO AUXILIAR PARA TÓPICOS (VERSÃO DEFINITIVA) ====================
 async def respond_in_thread(event, texto):
-    chat = await event.get_chat()
-    
-    msg = getattr(event, 'message', None) or getattr(event, '_message', None)
-    msg_id = msg.id if msg else None
-    
-    if len(texto) > 4096: 
-        partes = [texto[i:i+4000] for i in range(0, len(texto), 4000)]
+    try:
+        chat = await event.get_chat()
+        msg = await event.get_message() if hasattr(event, 'get_message') else event.message
+        
+        thread_id = None
+        if msg and msg.reply_to:
+            thread_id = msg.reply_to.reply_to_top_id or msg.reply_to_msg_id
+
+        limite = 4000
+        partes = [texto[i:i+limite] for i in range(0, len(texto), limite)] if len(texto) > limite else [texto]
+        
         for parte in partes:
             await event.client.send_message(
-                chat, 
+                chat.id, 
                 parte, 
                 parse_mode="markdown", 
-                reply_to=msg_id 
+                reply_to=thread_id 
             )
-    else:
-        await event.client.send_message(
-            chat, 
-            texto, 
-            parse_mode="markdown", 
-            reply_to=msg_id
-        )
-
-async def is_admin(event, chat_id, user_id):
-    """Verifica se o usuário é administrador ou criador do chat."""
-    try:
-        # Pega as permissões do usuário no grupo (chat_id)
-        permissions = await event.client.get_permissions(chat_id, user_id)
-        
-        # Retorna True se o usuário tiver direitos de administrador ou for o criador
-        return permissions.is_creator or permissions.is_admin
-    except Exception:
-        # Em caso de erro (ex: usuário não está mais no grupo), assume que não é admin
-        return False
+            
+    except Exception as e:
+        print(f"❌ Erro na função respond_in_thread: {e}")
 
 # --- FUNÇÕES AUXILIARES ACIMA ---
 
@@ -1013,6 +1001,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
