@@ -891,9 +891,12 @@ async def tratar_info(event):
                     print(f"Falha ao deletar: {delete_e}")
                 return
                 
-# ==================== TAREFA ASSÍNCRONA — BLOQUEIO AUTOMÁTICO ====================
+# ==================== TAREFA DE MONITORAMENTO — BLOQUEIO E AVISO ====================
 async def monitorar_horario():
     bloqueado = None
+    
+    TOPICOS_PARA_AVISAR = [1, 2561] #
+
     inicio_manha = time(9, 0)
     fim_manha = time(11, 0)
     inicio_tarde = time(12, 12)
@@ -909,31 +912,35 @@ async def monitorar_horario():
             if permitido and bloqueado is not False:
                 try:
                     await bot.edit_permissions(GRUPO_ID, send_messages=True, view_messages=True)
-                    await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nMensagens permitidas a partir de agora! 🚀")
+                    
+                    for tid in TOPICOS_PARA_AVISAR:
+                        await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nMensagens liberadas! 🚀", reply_to=tid)
                 except ChatNotModifiedError:
-                    pass 
+                    pass
                 bloqueado = False
 
             elif not permitido and bloqueado is not True:
                 try:
                     await bot.edit_permissions(GRUPO_ID, send_messages=False, view_messages=True)
                     
-                    mensagem_fechamento = ""
+                    msg_fechamento = ""
                     banner_a_enviar = None
 
                     if fim_manha < agora < inicio_tarde:
                         banner_a_enviar = CAMINHO_BANNER_INTERVALO
-                        mensagem_fechamento = "🍽️ **Pausa para o almoço!**\n\nVoltamos às 12:12 ⏰\nAté já! 😄"
+                        msg_fechamento = "🍽️ **Pausa para o almoço!**\n\nVoltamos às 12:12 ⏰\nAté já! 😄"
                     elif agora > fim_tarde or agora < inicio_manha:
                         banner_a_enviar = CAMINHO_BANNER_ENCERRAMENTO
-                        mensagem_fechamento = "🌙 **Suporte encerrado!**\n\nRetornamos amanhã às 9:00 ⏰\nBom descanso! 😊"
+                        msg_fechamento = "🌙 **Suporte encerrado!**\n\nRetornamos amanhã às 9:00 ⏰\nBom descanso! 😊"
 
-                    if mensagem_fechamento:
-                        await bot.send_message(GRUPO_ID, mensagem_fechamento)
-                    if banner_a_enviar and os.path.exists(banner_a_enviar):
-                        await bot.send_file(GRUPO_ID, banner_a_enviar)
+                    for tid in TOPICOS_PARA_AVISAR:
+                        if msg_fechamento:
+                            await bot.send_message(GRUPO_ID, msg_fechamento, reply_to=tid)
+                        if banner_a_enviar and os.path.exists(banner_a_enviar):
+                            await bot.send_file(GRUPO_ID, banner_a_enviar, reply_to=tid)
+                            
                 except ChatNotModifiedError:
-                    pass 
+                    pass
                 bloqueado = True
 
         except Exception as e:
@@ -1006,6 +1013,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
