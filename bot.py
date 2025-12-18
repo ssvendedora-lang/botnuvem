@@ -162,15 +162,13 @@ async def listar_membros_com_data():
 async def respond_in_thread(event, texto):
     try:
         chat_id = event.chat_id
+        msg = await event.get_message()
         
-        msg = await event.get_message() if hasattr(event, 'get_message') else getattr(event, 'message', None)
-
         thread_id = None
         if msg and msg.reply_to:
             thread_id = msg.reply_to.reply_to_top_id or msg.reply_to_msg_id
 
-        limite = 4000
-        partes = [texto[i:i+limite] for i in range(0, len(texto), limite)] if len(texto) > limite else [texto]
+        partes = [texto[i:i+4000] for i in range(0, len(texto), 4000)] if len(texto) > 4000 else [texto]
         
         for parte in partes:
             await event.client.send_message(
@@ -181,7 +179,7 @@ async def respond_in_thread(event, texto):
             )
             
     except Exception as e:
-        print(f"❌ Erro na função respond_in_thread: {e}")
+        print(f"❌ Erro na função: {e}")
 
 # --- FUNÇÕES AUXILIARES ACIMA ---
 
@@ -1002,6 +1000,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
