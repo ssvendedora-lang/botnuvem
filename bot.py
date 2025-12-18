@@ -842,8 +842,8 @@ def horario_permitido():
     fuso_horario = ZoneInfo("America/Sao_Paulo") 
     agora = datetime.now(fuso_horario).time()
     inicio_manha = time(9, 0)
-    fim_manha = time(11, 0)
-    inicio_tarde = time(12, 12)
+    fim_manha = time(11, 30)
+    inicio_tarde = time(12, 40)
     fim_tarde = time(22, 0)
     
     
@@ -898,8 +898,8 @@ async def monitorar_horario():
     TOPICOS_PARA_AVISAR = [1, 2561] #
 
     inicio_manha = time(9, 0)
-    fim_manha = time(11, 0)
-    inicio_tarde = time(12, 12)
+    fim_manha = time(11, 30)
+    inicio_tarde = time(12, 40)
     fim_tarde = time(22, 0)
 
     while True:
@@ -1013,6 +1013,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
