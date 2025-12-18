@@ -177,6 +177,16 @@ async def respond_in_thread(event, texto):
     else:
         await msg.reply(texto, parse_mode="markdown")
 
+# ==================== FUNÇÃO PARA VERIFICAR ADMIN ====================
+async def is_admin(event, chat_id, user_id):
+    try:
+        perms = await event.client.get_permissions(chat_id, user_id)
+        
+        return perms.is_admin or perms.is_creator
+    except Exception as e:
+        print(f"Erro ao verificar admin: {e}")
+        return False
+
 # ==================== /menu — MENU INICIAL COM BOTÕES ====================
 @bot.on(events.NewMessage(pattern=r'/menu'))
 async def menu_handler(event):
@@ -994,6 +1004,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
