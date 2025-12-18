@@ -158,15 +158,19 @@ async def listar_membros_com_data():
 
     return texto
 
-# ==================== FUNÇÃO AUXILIAR PARA TÓPICOS (VERSÃO DEFINITIVA) ====================
 async def respond_in_thread(event, texto):
     try:
         chat_id = event.chat_id
-        msg = await event.get_message()
         
+        msg = await event.get_message() if hasattr(event, 'get_message') else getattr(event, 'message', None)
+
         thread_id = None
-        if msg and msg.reply_to:
-            thread_id = msg.reply_to.reply_to_top_id or msg.reply_to_msg_id
+        if msg:
+            if msg.reply_to:
+                thread_id = msg.reply_to.reply_to_top_id or msg.reply_to_msg_id
+            
+            if thread_id is None and hasattr(event, 'query'):
+                 thread_id = msg.reply_to_msg_id
 
         partes = [texto[i:i+4000] for i in range(0, len(texto), 4000)] if len(texto) > 4000 else [texto]
         
@@ -179,7 +183,7 @@ async def respond_in_thread(event, texto):
             )
             
     except Exception as e:
-        print(f"❌ Erro na função: {e}")
+        print(f"❌ Erro na função respond_in_thread: {e}")
 
 # --- FUNÇÕES AUXILIARES ACIMA ---
 
@@ -1000,6 +1004,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
