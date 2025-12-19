@@ -886,7 +886,7 @@ async def tratar_info(event):
 async def monitorar_horario():
     bloqueado = None
     
-    TOPICOS_PARA_AVISAR = [1, 2561] #
+    TOPICOS_PARA_AVISAR = [1, 20] #
 
     inicio_manha = time(9, 0)
     fim_manha = time(11, 30)
@@ -1004,6 +1004,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
