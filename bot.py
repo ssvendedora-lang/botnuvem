@@ -907,7 +907,7 @@ async def monitorar_horario():
                     await bot.edit_permissions(GRUPO_ID, send_messages=True, view_messages=True)
                     
                     for tid in TOPICOS_PARA_AVISAR:
-                        await bot.send_message(GRUPO_ID, "🔓 **GRUPO ABERTO!**\n\nMensagens permitidas a partir de agora! 🚀", reply_to=tid)
+                        await bot.send_message(GRUPO_ID, "**GRUPO ABERTO!**", reply_to=tid)
                 except ChatNotModifiedError:
                     pass
                 bloqueado = False
@@ -1006,6 +1006,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
