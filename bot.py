@@ -866,6 +866,7 @@ async def tratar_info(event):
 
         for palavra in palavras_proibidas:
             palavra_normalizada = palavra.lower().replace(" ", "").replace(".", "")
+            
             if palavra_normalizada in texto_normalizado:
                 user = None
                 try:
@@ -874,12 +875,12 @@ async def tratar_info(event):
                     pass
                 
                 agora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                user_info = f"{user.first_name} (ID: {user.id})" if user else "Desconhecido"
+                user_name = user.first_name if user else "Desconhecido"
                 
                 print(f"🚫 LOG MVM: Termo '{palavra}' detectado!")
-            print(f"👤 Usuário: {nome_usuario} ({event.sender_id})")
-            print(f"📝 Mensagem enviada: {frase_completa}")
-            print("-" * 30)
+                print(f"👤 Usuário: {user_name} ({event.sender_id})")
+                print(f"📝 Mensagem enviada: {event.raw_text}")
+                print("-" * 30)
                 
                 try:
                     await event.delete()
@@ -1009,6 +1010,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
