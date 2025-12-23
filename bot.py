@@ -876,7 +876,10 @@ async def tratar_info(event):
                 agora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 user_info = f"{user.first_name} (ID: {user.id})" if user else "Desconhecido"
                 
-                print(f"🚨 MENSAGEM BANIDA: {user_info} enviou '{palavra}'")
+                print(f"🚫 LOG MVM: Termo '{palavra}' detectado!")
+            print(f"👤 Usuário: {nome_usuario} ({event.sender_id})")
+            print(f"📝 Mensagem enviada: {frase_completa}")
+            print("-" * 30)
                 
                 try:
                     await event.delete()
@@ -1006,6 +1009,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
+
 
 
 
