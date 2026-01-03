@@ -22,9 +22,6 @@ GRUPO_ID = int(os.getenv("TELEGRAM_GRUPO_ID"))
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME")
 
-CAMINHO_BANNER_INTERVALO = "fotosbotmvm/bannerencerramento.png"
-CAMINHO_BANNER_ENCERRAMENTO = "fotosbotmvm/bannerencerramento2.png"
-
 # ==================== CLIENT (CORRIGIDO PARA O RENDER) ====================
 
 bot = TelegramClient(MemorySession(), API_ID, API_HASH)
@@ -892,7 +889,7 @@ async def tratar_info(event):
 async def monitorar_horario():
     bloqueado = None
     
-    TOPICOS_PARA_AVISAR = [1, 20] #
+    TOPICOS_PARA_AVISAR = [1, 20] 
 
     inicio_manha = time(9, 0)
     fim_manha = time(11, 30)
@@ -921,20 +918,22 @@ async def monitorar_horario():
                     await bot.edit_permissions(GRUPO_ID, send_messages=False, view_messages=True)
                     
                     msg_fechamento = ""
-                    banner_a_enviar = None
+                    # REMOVIDO: banner_a_enviar = None
 
                     if fim_manha < agora < inicio_tarde:
-                        banner_a_enviar = CAMINHO_BANNER_INTERVALO
+                        # REMOVIDO: banner_a_enviar = CAMINHO_BANNER_INTERVALO
                         msg_fechamento = "🍽️ **Pausa para o almoço!**\n\nVoltamos às 12:40 ⏰\nAté já! 😄"
                     elif agora > fim_tarde or agora < inicio_manha:
-                        banner_a_enviar = CAMINHO_BANNER_ENCERRAMENTO
+                        # REMOVIDO: banner_a_enviar = CAMINHO_BANNER_ENCERRAMENTO
                         msg_fechamento = "🌙 **Suporte encerrado!**\n\nRetornamos amanhã às 9:00 ⏰\nBom descanso! 😊"
 
                     for tid in TOPICOS_PARA_AVISAR:
                         if msg_fechamento:
                             await bot.send_message(GRUPO_ID, msg_fechamento, reply_to=tid)
-                        if banner_a_enviar and os.path.exists(banner_a_enviar):
-                            await bot.send_file(GRUPO_ID, banner_a_enviar, reply_to=tid)
+                        
+                        # REMOVIDO O BLOCO ABAIXO QUE ENVIAVA O ARQUIVO:
+                        # if banner_a_enviar and os.path.exists(banner_a_enviar):
+                        #    await bot.send_file(GRUPO_ID, banner_a_enviar, reply_to=tid)
                             
                 except ChatNotModifiedError:
                     pass
@@ -1010,24 +1009,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         print("🛑 Bot desligado.")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
